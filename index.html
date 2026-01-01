@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>*QiQi*Dream*Journey*</title>
+    <!-- 使用核心库，确保加载顺序 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- 字体引入 -->
+    <link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=ZCOOL+XiaoWei&display=swap" rel="stylesheet">
+    
+    <style>
+        /* 强制全局禁止滚动 */
+        html, body { margin: 0; padding: 0; overflow: hidden; width: 100%; height: 100%; background-color: black; font-family: sans-serif; }
+        
+        .font-kuaile { font-family: 'ZCOOL KuaiLe', cursive; }
+        .font-xiaowei { font-family: 'ZCOOL XiaoWei', serif; }
+        .font-system-sc { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+
+        /* 动画：上下慢慢跳动 */
+        @keyframes floatSurprise { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-15px); } }
+        .animate-float-surprise { animation: floatSurprise 3s ease-in-out infinite; }
+        
+        /* 🟡 金色光芒脉冲特效 */
+        @keyframes pulse-gold {
+            0%, 100% { filter: drop-shadow(0 0 5px rgba(255, 215, 0, 0.6)); }
+            50% { filter: drop-shadow(0 0 20px rgba(255, 215, 0, 1)); }
+        }
+        .animate-pulse-gold { animation: pulse-gold 2s infinite ease-in-out; }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .fade-in { animation: fadeIn 0.8s ease-out forwards; }
+        
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .slide-up { animation: slideUp 0.6s ease-out forwards; }
+        
+        @keyframes marquee { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
+        .animate-marquee { display: inline-block; white-space: nowrap; animation: marquee 15s linear infinite; }
+
+        /* 呼吸红点 */
+        @keyframes pulse-red { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.2); opacity: 0.8; } }
+        .animate-pulse-red { animation: pulse-red 2s infinite; }
+        
+        /* 抖动效果 */
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-10px); } 75% { transform: translateX(10px); } }
+        .animate-shake { animation: shake 0.4s; }
+        
+        /* 钥匙平移和横向漂浮 */
+        @keyframes floatHorizontal { 0%, 100% { transform: translateX(0px); } 50% { transform: translateX(12px); } }
+        .animate-float-h { animation: floatHorizontal 2s ease-in-out infinite; }
+        .key-transition { transition: all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1); }
+
+        /* 最终泡泡动画 */
+        @keyframes bubbleUp { 0% { transform: translateY(0) scale(1); opacity: 1; } 100% { transform: translateY(-100vh) scale(1.5); opacity: 0; } }
+        .animate-bubble { animation: bubbleUp 4s ease-out forwards; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        const FONTS = {
+            base: "font-system-sc",      
+            title: "font-kuaile",        
+            pixel: "font-mono",          
+            handwriting: "font-kuaile",   
+            retro: "font-xiaowei"        
+        };
+
+        const NOTES = {
+          1: { title: "#梦话1", content: "每次和洪泰一起旅游，总是可以有新奇的体验，每次都好开心！希望以后可以经常和他一起旅游(o^^o)但是为什么不等我就自己先滑下山了！！" },
+          2: { title: "#梦话2", content: "洪泰专心做事的样子好帅～嘿嘿。有时候真的很佩服他喜欢一个事情可以坚持这么久，而且又聪明又有才华(*≧ω≦)" },
+          3: { title: "#梦话3", content: "唉，每次和洪泰吵完架都很后悔很难过，有时候我也会说很多伤害他的话，每次说出口就会很后悔，希望他能知道，那些话都是我胡说的，我从来没有真的想让和分开！" },
+          4: { title: "#梦话4", content: "不知不觉已经在一起两年了，两年中的每一天我都因为想到有洪泰都会感到很幸福，希望他也是这样。" },
+          final: { content: "新年快乐呀宝贝。回看2025年，感触最深的就是我们一起经历了好多。虽然中间有过争吵和摩擦，但现在想想，那些时刻也是我们磨合、变熟悉的必经之路。很开心我们都没有放弃，而是在慢慢学会如何更好地爱对方，也都在变得更成熟。谢谢你这一整年的陪伴，有你在身边，真的很好。关于接下来的日子，我希望我们都能成长为那个真正独立且强大的人，慢慢长成自己喜欢的样子，有底气去撑起我们对未来的所有愿望。还有一件事想叮嘱你，也是想叮嘱我自己：2026年，我们都要试着把心沉下来去积累，不急于求成，也不要被别人的节奏打乱。如果累了，千万别硬撑，回过头看看，我一直都在你身后呢。希望2026年，我们都能一切顺利！" }
+        };
+
+        // --- 封面组件 ---
+        const Cover = ({ onStart }) => (
+            <div className="w-full h-screen bg-black flex flex-col items-center justify-center relative overflow-hidden fade-in">
+                <div className="w-48 h-24 flex items-center justify-center mb-10 animate-float">
+                    <img src="https://github.com/ssqq0601-png/for2026/blob/main/%E8%8D%AF.webp?raw=true" className="w-full h-full object-contain drop-shadow-[0_0_15px_white]" />
+                </div>
+                <div className="text-center slide-up px-4 flex flex-col items-center">
+                    <p className={`text-white mb-8 text-xl tracking-widest ${FONTS.retro}`}>你得到了一颗进入孙琪梦境的药，要吃吗？</p>
+                    <button onClick={onStart} className="group transition-transform active:scale-95 focus:outline-none">
+                        <img src="https://github.com/ssqq0601-png/for2026/blob/main/%E8%A6%81%E5%90%83.webp?raw=true" className="w-40 h-auto" />
+                    </button>
+                </div>
+            </div>
+        );
+
+        // --- 日历页面 ---
+        const LevelSelect = ({ unlockLevel, onSelectLevel }) => {
+            const levels = { 1: 1, 2: 2, 7: 3, 10: 4 }; 
+            const MONTH_IMAGES = { 1: "https://github.com/ssqq0601-png/for2026/blob/main/Jan.webp?raw=true", 2: "https://github.com/ssqq0601-png/for2026/blob/main/Feb.webp?raw=true", 3: "https://github.com/ssqq0601-png/for2026/blob/main/Mar.webp?raw=true", 4: "https://github.com/ssqq0601-png/for2026/blob/main/Apr.webp?raw=true", 5: "https://github.com/ssqq0601-png/for2026/blob/main/May.webp?raw=true", 6: "https://github.com/ssqq0601-png/for2026/blob/main/June.webp?raw=true", 7: "https://github.com/ssqq0601-png/for2026/blob/main/Jul.webp?raw=true", 8: "https://github.com/ssqq0601-png/for2026/blob/main/Aug.webp?raw=true", 9: "https://github.com/ssqq0601-png/for2026/blob/main/Sept.webp?raw=true", 10: "https://github.com/ssqq0601-png/for2026/blob/main/Oct.webp?raw=true", 11: "https://github.com/ssqq0601-png/for2026/blob/main/Nov.webp?raw=true", 12: "https://github.com/ssqq0601-png/for2026/blob/main/Dec.webp?raw=true" };
+            const renderMonth = (m) => {
+                const isLevel = levels[m]; const isUnlocked = isLevel ? unlockLevel >= isLevel : false; const isCompleted = isLevel ? unlockLevel > isLevel : false;
+                return ( <div key={m} onClick={() => isLevel && isUnlocked && !isCompleted && onSelectLevel(isLevel)} className={`w-28 md:w-36 flex-shrink-0 transition-all duration-300 relative group p-1 ${isLevel && isUnlocked && !isCompleted ? 'cursor-pointer hover:scale-110' : ''}`}> <img src={MONTH_IMAGES[m]} className="w-full h-auto object-contain" /> {isUnlocked && !isCompleted && <div className="absolute top-1 right-1 w-3 h-3 md:w-4 md:h-4 bg-red-500 rounded-full border border-white shadow-sm z-20 animate-pulse-red"></div>} </div> );
+            };
+            return (
+                <div className={`w-full h-screen flex flex-col items-center justify-center fade-in bg-cover bg-center relative overflow-hidden`} style={{ backgroundImage: "url('https://github.com/ssqq0601-png/for2026/blob/main/calendar.webp?raw=true')" }}>
+                    <div className="w-full max-w-6xl flex flex-col items-center gap-[-2rem] md:gap-[-4rem] z-10 pt-[30vh]">
+                        <div className="flex justify-end items-end w-full gap-8 md:gap-12 px-12 relative"> {renderMonth(1)} <div className="fixed top-0 z-20 animate-float flex flex-col items-center min-w-[300px]"> <img src="https://github.com/ssqq0601-png/for2026/blob/main/%E6%97%A5%E5%8E%86%E6%A0%87%E9%A2%98.webp?raw=true" className="h-30 md:h-52 object-contain drop-shadow-2xl" /> </div> {renderMonth(2)} </div>
+                        <div className="flex justify-between items-center w-full px-6 mt-[-1rem] md:mt-[-2rem]"> {[3, 4, 5, 6, 7].map(m => renderMonth(m))} </div>
+                        <div className="flex justify-between items-center w-full px-6 mt-[-1rem] md:mt-[-2rem]"> {[8, 9, 10, 11, 12].map(m => renderMonth(m))} </div>
+                    </div>
+                    <p className={`mt-4 text-red-500 text-[10px] md:text-xs font-bold z-10`}>点击标记的月份试试吧</p>
+                </div>
+            );
+        };
+
+        const SkiGame = ({ onComplete }) => {
+            const mapGrid = [ [2,0,0,1,0,0,0,1,0,0],[1,1,0,1,0,1,0,0,0,1],[0,0,0,0,0,1,1,1,0,0],[0,1,1,1,0,0,0,0,0,1],[0,0,0,1,1,1,0,1,0,0],[1,1,0,0,0,0,0,1,1,0],[0,0,0,1,0,1,0,0,0,0],[0,1,1,1,0,1,1,1,1,0],[0,0,0,0,0,0,0,0,1,3] ];
+            const rows = mapGrid.length; const cols = mapGrid[0].length;
+            const [pos, setPos] = useState({ x: 0, y: 0 });
+            const [items, setItems] = useState([ { id: 1, x: 2, y: 0, type: 'zucchini', collected: false }, { id: 2, x: 6, y: 0, type: 'zucchini', collected: false }, { id: 3, x: 4, y: 3, type: 'zucchini', collected: false }, { id: 4, x: 2, y: 6, type: 'pizza', collected: false }, { id: 5, x: 8, y: 2, type: 'pizza', collected: false } ]);
+            useEffect(() => {
+                const handle = (e) => {
+                    let nx = pos.x, ny = pos.y;
+                    if (e.key === 'w' || e.key === 'ArrowUp') ny--; else if (e.key === 's' || e.key === 'ArrowDown') ny++; else if (e.key === 'a' || e.key === 'ArrowLeft') nx--; else if (e.key === 'd' || e.key === 'ArrowRight') nx++;
+                    if (ny >= 0 && ny < rows && nx >= 0 && nx < cols && mapGrid[ny][nx] !== 1) { setPos({ x: nx, y: ny }); setItems(prev => prev.map(it => (it.x === nx && it.y === ny ? { ...it, collected: true } : it))); if (mapGrid[ny][nx] === 3 && items.every(it => it.collected)) onComplete(); }
+                }; window.addEventListener('keydown', handle); return () => window.removeEventListener('keydown', handle);
+            }, [pos, items]);
+            const zCount = items.filter(i => i.type === 'zucchini' && i.collected).length; const pCount = items.filter(i => i.type === 'pizza' && i.collected).length;
+            return (
+                <div className="w-full h-screen flex flex-col fade-in bg-black">
+                    <div className="w-full h-14 md:h-16 relative flex items-center px-4 shadow-lg overflow-hidden border-b border-white/20">
+                        <img src="https://github.com/ssqq0601-png/for2026/blob/main/IMG_4343.webp?raw=true" className="absolute inset-0 w-full h-full object-fill z-0" />
+                        <div className="flex gap-4 items-center z-10">
+                            <div className="flex items-center gap-1.5 bg-white/20 px-2 py-0.5 rounded-full backdrop-blur-sm"><img src="https://github.com/ssqq0601-png/for2026/blob/main/%E8%A5%BF%E8%91%AB%E8%8A%A6.webp?raw=true" className="w-5 h-5 md:w-6 md:h-6 object-contain" /><span className="font-bold text-sm md:text-base text-green-900">{zCount}/3</span></div>
+                            <div className="flex items-center gap-1.5 bg-white/20 px-2 py-0.5 rounded-full backdrop-blur-sm"><img src="https://github.com/ssqq0601-png/for2026/blob/main/%E6%8A%AB%E8%90%A8.webp?raw=true" className="w-5 h-5 md:w-6 md:h-6 object-contain" /><span className="font-bold text-sm md:text-base text-orange-900">{pCount}/2</span></div>
+                        </div>
+                        <div className="flex-1 ml-6 overflow-hidden relative h-full flex items-center z-10"><div className="animate-marquee"><span className="text-red-600 font-bold text-xs md:text-sm tracking-wide drop-shadow-sm">控制WSDA去收孙琪的梦话纸条吧，记得吃饱了才有力气滑雪哦。 ❄️❄️❄️</span></div></div>
+                    </div>
+                    <div className="flex-1 relative overflow-hidden bg-black">
+                        <div className="absolute inset-0 z-0"><img src="https://github.com/ssqq0601-png/for2026/blob/main/Gemini_Generated_Image_wniyowniyowniyow.webp?raw=true" className="w-full h-full object-cover" /></div>
+                        <div className="grid w-full h-full relative z-10 gap-0" style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`, gridTemplateRows: `repeat(${rows}, minmax(0, 1fr))` }}>
+                            {mapGrid.map((row, r) => row.map((cell, c) => {
+                                const it = items.find(i => i.x === c && i.y === r && !i.collected);
+                                return ( <div key={`${r}-${c}`} className="relative w-full h-full flex items-center justify-center overflow-visible"> {cell === 1 && <img src="https://github.com/ssqq0601-png/for2026/blob/main/%E9%9B%AA%E5%A0%86.webp?raw=true" className="w-full h-full object-fill scale-105" />} {cell === 3 && <img src="https://github.com/ssqq0601-png/for2026/blob/main/%E4%BF%A1%E5%B0%81%E5%9B%BE%E6%A0%87.webp?raw=true" className="w-full h-full object-fill animate-bounce" />} {it && (<div className="w-full h-full flex items-center justify-center animate-float"><img src={it.type === 'zucchini' ? "https://github.com/ssqq0601-png/for2026/blob/main/%E8%A5%BF%E8%91%AB%E8%8A%A6.webp?raw=true" : "https://github.com/ssqq0601-png/for2026/blob/main/%E6%8A%AB%E8%90%A8.webp?raw=true"} className="w-full h-full object-fill scale-105" /></div>)} </div> );
+                            }))}
+                        </div>
+                        <div className="absolute z-20 player-move flex items-center justify-center pointer-events-none" style={{ width: `${100/cols}%`, height: `${100/rows}%`, left: `${pos.x * (100/cols)}%`, top: `${pos.y * (100/rows)}%` }}><img src="https://github.com/ssqq0601-png/for2026/blob/main/%E6%BB%91%E9%9B%AA%E7%94%B7%E5%AD%A9.webp?raw=true" className="w-[150%] h-[150%] object-contain drop-shadow-[0_10px_20px_rgba(0,0,0,0.5)]" /></div>
+                    </div>
+                </div>
+            );
+        };
+
+        // --- 第二关：节奏游戏 ---
+        const RhythmGame = ({ onComplete }) => {
+            const [drops, setDrops] = useState([]); const [score, setScore] = useState(0); const [misses, setMisses] = useState([]);
+            useEffect(() => { const interval = setInterval(() => setDrops(prev => [...prev, { id: Date.now(), y: 0, x: 50 }]), 1500); const anim = setInterval(() => setDrops(prev => prev.map(d => ({ ...d, y: d.y + 1.5 })).filter(d => { if (d.y > 100) { setMisses(m => [...m, { id: d.id, x: d.x }]); setTimeout(() => setMisses(curr => curr.filter(x => x.id !== d.id)), 1000); return false; } return true; })), 20); return () => { clearInterval(interval); clearInterval(anim); }; }, []);
+            useEffect(() => { if (score >= 15) onComplete(); }, [score]);
+            const handleStrawberryClick = () => { setDrops(prev => { const idx = prev.findIndex(d => d.y > 80 && d.y < 95); if (idx !== -1) { setScore(s => s + 1); const n = [...prev]; n.splice(idx, 1); return n; } return prev; }); };
+            return (
+                <div className="w-full h-screen flex flex-col items-center relative overflow-hidden fade-in bg-black">
+                    {/* 🟢 [修改位置: 背景图] */}
+                    <div className="absolute inset-0 z-0"><img src="https://github.com/ssqq0601-png/for2026/blob/main/IMG_4353.webp?raw=true" className="w-full h-full object-cover" /></div>
+                    <div className="absolute top-4 right-4 z-20 w-48 h-14 md:h-16 flex flex-col items-end"> 
+                        <div className="relative w-full h-full flex items-center justify-center"> 
+                             {/* 🟢 [修改位置: 状态栏背景图片] */}
+                             <img src="https://github.com/ssqq0601-png/for2026/blob/main/%E5%A3%AB%E5%A4%9A%E5%95%A4%E6%A2%A8%E7%8A%B6%E6%80%81%E6%A0%8F.webp?raw=true" className="absolute inset-0 w-full h-full object-fill z-0" /> 
+                             <div className="relative z-10 flex items-center px-4 gap-2"> 
+                                {/* 🟢 [修改位置: 得分图标图片] */}
+                                <img src="https://github.com/ssqq0601-png/for2026/blob/main/%E7%B3%96%E6%B5%86.webp?raw=true" className="w-6 h-6 md:w-8 md:h-8 object-contain" /> 
+                                <span className={`text-lg md:text-xl font-bold text-pink-400 drop-shadow-md ${FONTS.pixel}`}>Score: {score}/15</span> 
+                             </div> 
+                        </div>
+                        <p className="text-red-600 font-bold text-xs mt-1 drop-shadow-sm">点击草莓接住糖浆！</p>
+                    </div>
+                    <div className="w-full max-sm h-full relative z-10 border-x-2 border-white/10"> 
+                        {/* 🟢 [修改位置: 下落物糖浆图片] */}
+                        {drops.map(d => (<div key={d.id} style={{ top: `${d.y}%`, left: `${d.x}%` }} className="absolute -translate-x-1/2 w-14 h-20 flex items-center justify-center"><img src="https://github.com/ssqq0601-png/for2026/blob/main/%E4%B8%8B%E8%90%BD%E7%B3%96%E6%B5%86.webp?raw=true" className="w-full h-full object-contain" /></div>))} 
+                        {misses.map(m => (<div key={m.id} style={{ left: `${m.x}%`, bottom: '35%' }} className="absolute -translate-x-1/2 text-gray-400 font-bold text-2xl slide-up z-30">MISS</div>))} 
+                        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 w-full flex justify-center z-20"> 
+                            <button onClick={handleStrawberryClick} className="w-36 h-36 relative active:scale-90 focus:outline-none"> 
+                                {/* 🟢 [修改位置: 目标草莓图片] */}
+                                <img src="https://github.com/ssqq0601-png/for2026/blob/main/%E5%A3%AB%E5%A4%9A%E5%95%A4%E6%A2%A8.webp?raw=true" className="w-full h-full object-contain" /> 
+                            </button> 
+                        </div> 
+                    </div>
+                </div>
+            );
+        };
+
+        const FightGame = ({ onComplete }) => {
+            const [hearts, setHearts] = useState(3); const [blocks, setBlocks] = useState(0); const [proj, setProj] = useState({ active: false, x: 100, type: 'fire' }); const [shield, setShield] = useState(false); const [isHit, setIsHit] = useState(false); const [victory, setVictory] = useState(false); const [gameOver, setGameOver] = useState(false); const fireCountRef = useRef(0);
+            useEffect(() => { if (hearts <= 0) { setGameOver(true); return; } if (victory) return; const loop = setInterval(() => { if (!proj.active) { const nextType = fireCountRef.current % 4 === 3 ? 'bubble' : 'fire'; setProj({ active: true, x: 90, type: nextType }); fireCountRef.current += 1; } }, 1800); const move = setInterval(() => { if (proj.active) setProj(p => { const nx = p.x - 2.5; if (nx < 20) { if (shield) { setBlocks(b => { if (b + 1 >= 10) setVictory(true); return b + 1; }); return { active: false, x: 100, type: 'fire' }; } else { setIsHit(true); setHearts(h => h - 1); setTimeout(() => setIsHit(false), 300); return { active: false, x: 100, type: 'fire' }; } } return { ...p, x: nx }; }); }, 30); return () => { clearInterval(loop); clearInterval(move); }; }, [proj, shield, victory, hearts]);
+            useEffect(() => { if (victory) setTimeout(onComplete, 4500); }, [victory]);
+            const handleRetry = () => { setHearts(3); setBlocks(0); setGameOver(false); setProj({ active: false, x: 100, type: 'fire' }); fireCountRef.current = 0; };
+            return (
+                <div className={`w-full h-screen flex flex-col justify-between relative overflow-hidden fade-in bg-black ${isHit ? 'bg-red-900/40' : ''}`} onMouseDown={() => !victory && !gameOver && setShield(true)} onMouseUp={() => setShield(false)} onTouchStart={() => !victory && !gameOver && setShield(true)} onTouchEnd={() => setShield(false)}> 
+                    <div className="absolute inset-0 z-0"><img src="https://github.com/ssqq0601-png/for2026/blob/main/%E6%89%93%E6%9E%B6%E8%83%8C%E6%99%AF.webp?raw=true" className="w-full h-full object-cover" /></div> 
+                    <div className="flex-1 flex items-end justify-between px-10 pb-24 relative"> 
+                        <div className="relative z-10 w-28 h-40 md:w-36 md:h-48 transition-transform"> 
+                            <img src="https://github.com/ssqq0601-png/for2026/blob/main/%E6%89%93%E6%9E%B6%E7%94%B7%E5%AD%A9.webp?raw=true" className="w-full h-full object-contain" /> 
+                            {shield && !victory && !gameOver && ( <div className="absolute top-1/2 -translate-y-1/2 -right-6 w-14 h-48 md:w-18 md:h-56 z-20"> <img src="https://github.com/ssqq0601-png/for2026/blob/main/%E7%9B%BE%E7%89%8C.webp?raw=true" className="w-full h-full object-contain" /> </div> )} 
+                        </div> 
+                        <div className="w-28 h-40 md:w-36 md:h-48 z-10"> <img src="https://github.com/ssqq0601-png/for2026/blob/main/%E6%89%93%E6%9E%B6%E5%A5%B3%E5%AD%A9.webp?raw=true" className="w-full h-full object-contain" /> </div> 
+                        {proj.active && !victory && !gameOver && ( <div className="absolute bottom-28 w-16 h-16 md:w-20 md:h-20 flex items-center justify-center z-10" style={{ left: `${proj.x}%` }}> {proj.type === 'fire' ? ( <img src="https://github.com/ssqq0601-png/for2026/blob/main/%E7%81%AB.webp?raw=true" className="w-full h-full object-contain" /> ) : ( <img src="https://github.com/ssqq0601-png/for2026/blob/main/%E8%84%8F%E8%AF%9D.webp?raw=true" className="w-full h-full object-contain" /> )} </div> )} 
+                        {victory && ( <div className="absolute inset-0 pointer-events-none overflow-hidden z-30"> {[...Array(25)].map((_, i) => ( <img key={i} src="https://github.com/ssqq0601-png/for2026/blob/main/%E6%B3%A1%E6%B3%A1.webp?raw=true" className="absolute w-10 h-10 md:w-16 md:h-16 animate-bubble opacity-80" style={{ left: `${Math.random() * 100}%`, bottom: '-10%', animationDelay: `${Math.random() * 2}s` }} /> ))} </div> )} 
+                    </div> 
+                    <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-40 text-center"> <p className="text-red-600 font-bold text-sm drop-shadow-md">点击人物进行防守！</p> </div>
+                    {gameOver && ( <div className="absolute inset-0 bg-black/80 flex flex-col items-center justify-center z-50 fade-in px-4 text-center"> <h2 className="text-red-500 text-3xl font-bold mb-8 tracking-widest font-pixel">被孙琪的火焰打败了...</h2> <button onClick={handleRetry} className="text-white text-xl font-bold bg-red-600 px-10 py-3 rounded-full hover:bg-red-700 transition-colors shadow-[0_0_20px_red]"> 你被打败了，再试一次 </button> </div> )} 
+                </div>
+            );
+        };
+
+        const PuzzleGame = ({ onComplete }) => {
+            const [phase, setPhase] = useState(0); const [inputCode, setInputCode] = useState(""); const [isKeyMoving, setIsKeyMoving] = useState(false); const PUZZLES = [ { hint: "First Talk", ans: "0910" }, { hint: "First Date", ans: "1011" }, { hint: "First Day", ans: "1018" } ]; const cur = PUZZLES[phase];
+            useEffect(() => { const handleKey = (e) => { if (isKeyMoving) return; if (/^[0-9]$/.test(e.key)) setInputCode(v => v.length < 4 ? v + e.key : v); else if (e.key === 'Backspace') setInputCode(v => v.slice(0, -1)); else if (e.key === 'Enter') check(); }; window.addEventListener('keydown', handleKey); return () => window.removeEventListener('keydown', handleKey); }, [inputCode, phase, isKeyMoving]);
+            const check = () => { if (inputCode.length < 4 || isKeyMoving) return; setIsKeyMoving(true); setTimeout(() => { if (inputCode === cur.ans) { setInputCode(""); setIsKeyMoving(false); if (phase < 2) setPhase(p => p + 1); else onComplete(); } else { document.getElementById('box-container').classList.add('animate-shake'); setTimeout(() => { document.getElementById('box-container').classList.remove('animate-shake'); setIsKeyMoving(false); }, 500); } }, 800); };
+            return (
+                <div className="w-full h-screen bg-black flex items-center justify-center fade-in relative overflow-hidden">
+                    <div className="absolute inset-0 z-0"><img src="https://github.com/ssqq0601-png/for2026/blob/main/%E7%AE%B1%E5%AD%90%E8%83%8C%E6%99%AF.webp?raw=true" className="w-full h-full object-cover" /></div>
+                    <div className="relative w-[320px] h-[320px] md:w-[450px] md:h-[450px] z-10 flex items-center justify-center">
+                        <div id="box-container" className="w-full h-full relative">
+                            <img src="https://github.com/ssqq0601-png/for2026/blob/main/%E7%AE%B1%E5%AD%90.webp?raw=true" className="w-full h-full object-contain" />
+                            <div className="absolute -top-14 left-1/2 -translate-x-1/2 w-72 h-28 flex items-center justify-center">
+                                <img src="https://github.com/ssqq0601-png/for2026/blob/main/%E7%AE%B1%E5%AD%90%E6%8F%90%E7%A4%BA%E8%AF%8D%E8%83%8C%E6%99%AF.webp?raw=true" className="absolute inset-0 w-full h-full object-contain" />
+                                <div className={`relative z-20 font-bold text-xl text-black ${FONTS.handwriting} mt-1`}>Tip: {cur.hint}</div>
+                            </div>
+                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-16 w-20 h-20 md:w-28 md:h-28"> <img src={ phase === 0 ? "https://github.com/ssqq0601-png/for2026/blob/main/%E9%93%B6%E9%94%81.webp?raw=true" : phase === 1 ? "https://github.com/ssqq0601-png/for2026/blob/main/%E9%87%91%E9%94%81.webp?raw=true" : "https://github.com/ssqq0601-png/for2026/blob/main/%E5%BD%A9%E9%94%81.webp?raw=true" } className="w-full h-full object-contain" /> </div>
+                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 translate-y-10 w-3/5 h-12 bg-white/70 border-2 border-gray-400 rounded flex items-center justify-center text-3xl font-mono tracking-[0.5em] text-gray-800">{inputCode.padEnd(4, '_')}</div>
+                        </div>
+                        <div onClick={check} className={`absolute key-transition cursor-pointer z-30 ${isKeyMoving ? 'top-1/2 left-1/2 -translate-x-1/2 -translate-y-16 scale-110' : 'top-1/2 -right-40 md:-right-64 -translate-y-1/2 animate-float-h'}`} style={{ width: '120px', height: '120px' }}> <img src="https://github.com/ssqq0601-png/for2026/blob/main/%E9%92%A5%E5%8C%99.webp?raw=true" className="w-full h-full object-contain drop-shadow-2xl" /> </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const NoteView = ({ noteId, onClose }) => {
+            const [isOpen, setIsOpen] = useState(false); const note = NOTES[noteId];
+            return (
+                <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/90 p-4 fade-in">
+                    {!isOpen ? ( <div onClick={() => setIsOpen(true)} className="w-80 h-auto cursor-pointer animate-float-surprise transition-transform active:scale-90"> <img src="https://github.com/ssqq0601-png/for2026/blob/main/%E5%BC%B9%E5%87%BA%E4%BF%A1%E5%B0%81.webp?raw=true" className="w-full h-full object-contain drop-shadow-[0_0_20px_white]" /> </div> ) : ( <div className="flex flex-col items-center w-full max-w-lg relative h-[80vh] justify-center"> <div className="w-full relative h-full flex items-center justify-center animate-slide-up"> <img src="https://github.com/ssqq0601-png/for2026/blob/main/%E4%BF%A1%E7%BA%B8.webp?raw=true" className="w-full h-full object-contain" /> <div className="absolute inset-0 flex flex-col items-center justify-center px-10 text-center"> <h2 className={`text-2xl md:text-3xl font-bold text-pink-600 mb-6 ${FONTS.retro}`}>{note.title}</h2> <p className={`text-gray-800 text-lg md:text-xl leading-relaxed ${FONTS.handwriting} max-w-[80%]`}>{note.content}</p> </div> </div> <button onClick={onClose} className="mt-4 text-white text-2xl font-bold tracking-[0.3em] hover:scale-110 transition-transform active:opacity-70">收起</button> </div> )}
+                </div>
+            );
+        };
+
+        const FinalSurprise = () => {
+            const [isSynthesized, setIsSynthesized] = useState(false);
+            return (
+                <div className={`w-full h-screen relative flex flex-col items-center justify-center overflow-hidden fade-in ${!isSynthesized ? 'bg-white' : ''}`}>
+                    {isSynthesized && (
+                        <div className="absolute inset-0 z-0">
+                            <img src="https://github.com/ssqq0601-png/for2026/blob/main/%E6%83%8A%E5%96%9C%E8%83%8C%E6%99%AF.webp?raw=true" className="w-full h-full object-cover" />
+                        </div>
+                    )}
+
+                    {!isSynthesized ? (
+                        <div className="relative z-10 flex flex-col items-center">
+                            <div className="flex gap-4 md:gap-8 mb-12">
+                                {[0, 1, 2, 3].map((i) => (
+                                    <div key={i} className="w-16 md:w-24 h-auto animate-float-surprise animate-pulse-gold" style={{ animationDelay: `${i * 0.25}s` }}>
+                                        <img src="https://github.com/ssqq0601-png/for2026/blob/main/%E4%BF%A1%E5%B0%81%E5%9B%BE%E6%A0%87.webp?raw=true" className="w-full h-full object-contain" />
+                                    </div>
+                                ))}
+                            </div>
+                            <p className="text-red-600 font-bold text-lg md:text-xl mb-10 drop-shadow-sm">恭喜你！已经收集完成，点击合成惊喜。</p>
+                            <button onClick={() => setIsSynthesized(true)} className="relative w-48 md:w-64 h-auto animate-pulse-gold transition-transform hover:scale-105 active:scale-95">
+                                <img src="https://github.com/ssqq0601-png/for2026/blob/main/%E5%90%88%E6%88%90.webp?raw=true" className="w-full h-full object-contain" />
+                            </button>
+                        </div>
+                    ) : (
+                        /* 阶段2 结局展示 */
+                        <div className="relative z-10 flex flex-col items-center w-full max-w-4xl animate-slide-up h-[95vh] justify-center px-4">
+                            <div className="w-full h-full relative flex items-center justify-center">
+                                <img src="https://github.com/ssqq0601-png/for2026/blob/main/%E6%9C%80%E7%BB%88%E4%BF%A1%E7%BA%B8.webp?raw=true" className="w-full h-full object-contain drop-shadow-[0_0_40px_white]" />
+                                <div className="absolute inset-0 flex flex-col items-center justify-center pt-10 md:pt-16 px-10">
+                                    <div className="w-10 h-10 text-red-500 text-3xl mb-4 flex items-center justify-center animate-bounce">❤️</div>
+                                    <div className="max-w-[58%] md:max-w-[52%] w-full">
+                                        <div className={`text-xs md:text-lg text-gray-800 leading-relaxed md:leading-loose ${FONTS.handwriting} w-full`} style={{ textAlign: "justify", textJustify: "inter-character" }}>
+                                            <p>{NOTES.final.content}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        const App = () => {
+            const [stage, setStage] = useState('cover'); const [unlockLevel, setUnlockLevel] = useState(1); const [showNote, setShowNote] = useState(null);
+            const audioRef = useRef(null);
+            
+            // 🟢 [修改位置: BGM 链接]
+            const BGM_URL = "https://raw.githubusercontent.com/ssqq0601-png/for2026/refs/heads/main/bgm.mp3"; 
+
+            const startBGM = () => { if (audioRef.current) { audioRef.current.play().catch(e => console.log("BGM play failed")); } };
+
+            const handleNoteClose = () => { 
+                const currentId = showNote; setShowNote(null); 
+                if (currentId === 4) setStage('final'); 
+                else { setUnlockLevel(currentId + 1); setStage('select'); } 
+            };
+            
+            return (
+                <div className="text-gray-900 select-none h-screen w-screen overflow-hidden">
+                    <audio ref={audioRef} src={BGM_URL} loop />
+                    {stage === 'cover' && <Cover onStart={() => { startBGM(); setStage('select'); }} />}
+                    {stage === 'select' && <LevelSelect unlockLevel={unlockLevel} onSelectLevel={(id) => setStage(`game${id}`)} />}
+                    {stage === 'game1' && <SkiGame onComplete={() => { setStage('select'); setShowNote(1); }} />}
+                    {stage === 'game2' && <RhythmGame onComplete={() => { setStage('select'); setShowNote(2); }} />}
+                    {stage === 'game3' && <FightGame onComplete={() => { setStage('select'); setShowNote(3); }} />}
+                    {stage === 'game4' && <PuzzleGame onComplete={() => { setStage('select'); setShowNote(4); }} />}
+                    {stage === 'final' && <FinalSurprise />}
+                    {showNote && <NoteView noteId={showNote} onClose={handleNoteClose} />}
+                </div>
+            );
+        };
+
+        const rootElement = document.getElementById('root');
+        const root = ReactDOM.createRoot(rootElement);
+        root.render(<App />);
+
+    </script>
+</body>
+</html>
